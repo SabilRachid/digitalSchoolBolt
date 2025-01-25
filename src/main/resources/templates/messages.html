@@ -1,0 +1,11 @@
+<!-- Mise à jour du select des destinataires -->
+<div class="form-group">
+    <label for="recipient">Destinataire</label>
+    <select id="recipient" name="recipient" class="form-select" required>
+        <option value="">Sélectionner un destinataire</option>
+        <option th:each="user : ${users}" 
+                th:value="${user.id}" 
+                th:text="${user.lastName + ' ' + user.firstName + ' (' + user.email + ')'}">
+        </option>
+    </select>
+</div>

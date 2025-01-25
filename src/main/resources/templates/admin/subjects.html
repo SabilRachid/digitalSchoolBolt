@@ -1,0 +1,131 @@
+```html
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>Gestion des Matières - Digital School</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/css/digitalSchool.css}">
+    <link rel="stylesheet" th:href="@{/css/components/sidebar.css}">
+    <link rel="stylesheet" th:href="@{/css/components/topbar.css}">
+    <link rel="stylesheet" th:href="@{/css/components/tables.css}">
+    <link rel="stylesheet" th:href="@{/css/components/forms.css}">
+    <link rel="stylesheet" th:href="@{/css/components/buttons.css}">
+    <link rel="stylesheet" th:href="@{/css/components/modals.css}">
+    <link rel="stylesheet" th:href="@{/css/components/alerts.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/common.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">Gestion des Matières</h1>
+            <button class="btn btn-primary" onclick="subjectsPage.openModal()">
+                <i class="fas fa-plus"></i>
+                <span>Ajouter une matière</span>
+            </button>
+        </div>
+
+        <div class="table-container">
+            <table id="subjectsTable" class="table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Nom</th>
+                        <th>Description</th>
+                        <th>Coefficient</th>
+                        <th>Type</th>
+                        <th>Niveaux</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Matière -->
+    <div class="modal" id="subjectModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter une matière</h5>
+                    <button type="button" class="modal-close" data-dismiss="modal">×</button>
+                </div>
+                <form id="subjectForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="id" name="id">
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="code">Code</label>
+                                <input type="text" class="form-control" id="code" name="code" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="name">Nom</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="coefficient">Coefficient</label>
+                                <input type="number" class="form-control" id="coefficient" name="coefficient" 
+                                       min="0.5" step="0.5" value="1.0" required>
+                            </div>
+                            <div class="form-group">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="optional" name="optional">
+                                    <label class="form-check-label" for="optional">Matière optionnelle</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="levels">Niveaux</label>
+                            <select class="form-control" id="levels" name="levels" multiple>
+                                <option value="CP">CP - Cours Préparatoire</option>
+                                <option value="CE1">CE1 - Cours Élémentaire 1</option>
+                                <option value="CE2">CE2 - Cours Élémentaire 2</option>
+                                <option value="CM1">CM1 - Cours Moyen 1</option>
+                                <option value="CM2">CM2 - Cours Moyen 2</option>
+                                <option value="SIXIEME">6ème - Sixième</option>
+                                <option value="CINQUIEME">5ème - Cinquième</option>
+                                <option value="QUATRIEME">4ème - Quatrième</option>
+                                <option value="TROISIEME">3ème - Troisième</option>
+                                <option value="SECONDE">2nde - Seconde</option>
+                                <option value="PREMIERE">1ère - Première</option>
+                                <option value="TERMINALE">Tle - Terminale</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script th:src="@{/js/admin/common.js}"></script>
+    <script th:src="@{/js/admin/subjects.js}"></script>
+</body>
+</html>
+```

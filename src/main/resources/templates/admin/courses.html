@@ -1,0 +1,126 @@
+```html
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>Gestion des Cours - Digital School</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/css/digitalSchool.css}">
+    <link rel="stylesheet" th:href="@{/css/components/sidebar.css}">
+    <link rel="stylesheet" th:href="@{/css/components/topbar.css}">
+    <link rel="stylesheet" th:href="@{/css/components/tables.css}">
+    <link rel="stylesheet" th:href="@{/css/components/forms.css}">
+    <link rel="stylesheet" th:href="@{/css/components/buttons.css}">
+    <link rel="stylesheet" th:href="@{/css/components/modals.css}">
+    <link rel="stylesheet" th:href="@{/css/components/alerts.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/common.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">Gestion des Cours</h1>
+            <button class="btn btn-primary" onclick="coursesPage.openModal()">
+                <i class="fas fa-plus"></i>
+                <span>Ajouter un cours</span>
+            </button>
+        </div>
+
+        <div class="table-container">
+            <table id="coursesTable" class="table">
+                <thead>
+                    <tr>
+                        <th>Matière</th>
+                        <th>Professeur</th>
+                        <th>Classe</th>
+                        <th>Horaire</th>
+                        <th>Salle</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Cours -->
+    <div class="modal" id="courseModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter un cours</h5>
+                    <button type="button" class="modal-close" data-dismiss="modal">×</button>
+                </div>
+                <form id="courseForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="id" name="id">
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="subject">Matière</label>
+                                <select class="form-control" id="subject" name="subject" required>
+                                    <option value="">Sélectionner une matière</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="professor">Professeur</label>
+                                <select class="form-control" id="professor" name="professor" required>
+                                    <option value="">Sélectionner un professeur</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="class">Classe</label>
+                                <select class="form-control" id="class" name="class" required>
+                                    <option value="">Sélectionner une classe</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="room">Salle</label>
+                                <input type="text" class="form-control" id="room" name="room" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="startTime">Heure de début</label>
+                                <input type="datetime-local" class="form-control" id="startTime" name="startTime" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="endTime">Heure de fin</label>
+                                <input type="datetime-local" class="form-control" id="endTime" name="endTime" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script th:src="@{/js/admin/common.js}"></script>
+    <script th:src="@{/js/admin/courses.js}"></script>
+</body>
+</html>
+```
