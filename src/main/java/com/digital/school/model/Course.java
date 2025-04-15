@@ -2,99 +2,98 @@ package com.digital.school.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
+@DiscriminatorValue("course")
 @Table(name = "courses")
-public class Course {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @ManyToOne
-    @JoinColumn(name = "subject_id", nullable = false)
-    private Subject subject;
-    
-    @ManyToOne
+@PrimaryKeyJoinColumn(name = "id")
+public class Course extends Event {
+
+    private LocalDate date;
+
+    // Association spécifique pour le professeur qui enseigne le cours.
+    @ManyToOne(optional = false)
     @JoinColumn(name = "professor_id", nullable = false)
-    private User professor;
-    
-    @ManyToOne
-    @JoinColumn(name = "class_id", nullable = false)
-    private Classe classe;
-    
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
-    
-    private String room;
-    
+    private Professor professor;
+
+    // Nombre de ressources associées au cours
+    @Column(name = "resource_count")
+    private int resourceCount = 0;
+
+    // Lien en ligne pour les cours virtuels (optionnel)
+    private String onlineLink;
+
+    // Raison d'annulation (si le cours est annulé)
     @Column(columnDefinition = "TEXT")
-    private String description;
+    private String cancellationReason;
 
-    public Course() {
+    // Notes de l'instructeur
+    @Column(columnDefinition = "TEXT")
+    private String instructorNotes;
+
+    // --- Nouvelle propriété Attendance ---
+    // Chaque cours possède une fiche d'attendance unique.
+    @OneToOne(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Attendance attendance;
+
+    // Getters et setters
+
+    public LocalDate getDate() {
+        return date;
     }
 
-    public Long getId() {
-        return id;
+    public void setDate(LocalDate date) {
+        this.date = date;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Subject getSubject() {
-        return subject;
-    }
-
-    public void setSubject(Subject subject) {
-        this.subject = subject;
-    }
-
-    public User getProfessor() {
+    public Professor getProfessor() {
         return professor;
     }
 
-    public void setProfessor(User professor) {
+    public void setProfessor(Professor professor) {
         this.professor = professor;
     }
 
-    public Classe getClasse() {
-        return classe;
+
+    public int getResourceCount() {
+        return resourceCount;
     }
 
-    public void setClasse(Classe classe) {
-        this.classe = classe;
+    public void setResourceCount(int resourceCount) {
+        this.resourceCount = resourceCount;
     }
 
-    public LocalDateTime getStartTime() {
-        return startTime;
+    public String getOnlineLink() {
+        return onlineLink;
     }
 
-    public void setStartTime(LocalDateTime startTime) {
-        this.startTime = startTime;
+    public void setOnlineLink(String onlineLink) {
+        this.onlineLink = onlineLink;
     }
 
-    public LocalDateTime getEndTime() {
-        return endTime;
+    public String getCancellationReason() {
+        return cancellationReason;
     }
 
-    public void setEndTime(LocalDateTime endTime) {
-        this.endTime = endTime;
+    public void setCancellationReason(String cancellationReason) {
+        this.cancellationReason = cancellationReason;
     }
 
-    public String getRoom() {
-        return room;
+    public String getInstructorNotes() {
+        return instructorNotes;
     }
 
-    public void setRoom(String room) {
-        this.room = room;
+    public void setInstructorNotes(String instructorNotes) {
+        this.instructorNotes = instructorNotes;
     }
 
-    public String getDescription() {
-        return description;
+    public Attendance getAttendance() {
+        return attendance;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setAttendance(Attendance attendance) {
+        this.attendance = attendance;
     }
+
 }

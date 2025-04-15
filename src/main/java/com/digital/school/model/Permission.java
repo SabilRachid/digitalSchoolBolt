@@ -2,15 +2,18 @@ package com.digital.school.model;
 
 import jakarta.persistence.*;
 import com.digital.school.model.enumerated.PermissionName;
+import org.hibernate.annotations.Filter;
 
 @Entity
 @Table(name = "permissions")
-public class Permission {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
+@Filter(name = "schoolFilter", condition = "school_id = :schoolId")
+public class Permission extends AuditableEntity {
+
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "school_id", nullable = false)
+    private School school;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true)
     private PermissionName name;
@@ -19,17 +22,13 @@ public class Permission {
     
     public Permission() {
     }
+
+    public School getSchool() { return school; }
+
+    public void setSchool(School school) { this.school = school; }
     
     public Permission(PermissionName name) {
         this.name = name;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public PermissionName getName() {

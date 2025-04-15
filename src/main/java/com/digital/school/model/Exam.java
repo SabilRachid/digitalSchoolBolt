@@ -1,149 +1,53 @@
 package com.digital.school.model;
 
 import jakarta.persistence.*;
-import com.digital.school.model.enumerated.ExamStatus;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
+@DiscriminatorValue("exams")
 @Table(name = "exams")
-public class Exam {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @Column(nullable = false)
-    private String name;
-    
+@PrimaryKeyJoinColumn(name = "id")
+public class Exam extends Evaluation {
+
+    // Durée de l'examen en minutes
+    @Column(name = "duration", nullable = true)
+    private int duration;
+
+    // Au lieu d'une chaîne, on utilise une relation vers la classe Room
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "room_id")
+    private Room room;
+
     @Column(columnDefinition = "TEXT")
     private String description;
-    
-    @Column(nullable = false)
-    private LocalDateTime examDate;
-    
-    @Column(nullable = false)
-    private Integer duration;
-    
-    @ManyToOne
-    @JoinColumn(name = "class_id", nullable = false)
-    private Classe classe;
-    
-    @ManyToOne
-    @JoinColumn(name = "subject_id", nullable = false)
-    private Subject subject;
-    
-    @Column(nullable = false)
-    private Double maxScore;
-    
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ExamStatus status = ExamStatus.SCHEDULED;
-    
-    @ManyToOne
-    @JoinColumn(name = "created_by_id")
-    private User createdBy;
-    
-    private LocalDateTime createdAt = LocalDateTime.now();
-    
-    @Column(nullable = false)
-    private Boolean isPublished = false;
 
-    public Exam() {
+    // Getters et setters
+
+    public int getDuration() {
+        return duration;
     }
 
-    public Long getId() {
-        return id;
+    public void setDuration(int duration) {
+        this.duration = duration;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public Room getRoom() {
+        return room;
     }
 
-    public String getName() {
-        return name;
+    public void setRoom(Room room) {
+        this.room = room;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    // Méthode dérivée pour obtenir la date de l'examen (basée sur startTime)
+
 
     public String getDescription() {
         return description;
     }
-
     public void setDescription(String description) {
         this.description = description;
-    }
 
-    public LocalDateTime getExamDate() {
-        return examDate;
-    }
-
-    public void setExamDate(LocalDateTime examDate) {
-        this.examDate = examDate;
-    }
-
-    public Integer getDuration() {
-        return duration;
-    }
-
-    public void setDuration(Integer duration) {
-        this.duration = duration;
-    }
-
-    public Classe getClasse() {
-        return classe;
-    }
-
-    public void setClasse(Classe classe) {
-        this.classe = classe;
-    }
-
-    public Subject getSubject() {
-        return subject;
-    }
-
-    public void setSubject(Subject subject) {
-        this.subject = subject;
-    }
-
-    public Double getMaxScore() {
-        return maxScore;
-    }
-
-    public void setMaxScore(Double maxScore) {
-        this.maxScore = maxScore;
-    }
-
-    public ExamStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(ExamStatus status) {
-        this.status = status;
-    }
-
-    public User getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(User createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Boolean getIsPublished() {
-        return isPublished;
-    }
-
-    public void setIsPublished(Boolean isPublished) {
-        this.isPublished = isPublished;
     }
 }

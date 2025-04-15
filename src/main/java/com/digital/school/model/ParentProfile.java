@@ -1,15 +1,19 @@
 package com.digital.school.model;
 
+import com.digital.school.config.school.SchoolAware;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
 
 @Entity
 @Table(name = "parent_profiles")
-public class ParentProfile {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
+@Filter(name = "schoolFilter", condition = "school_id = :schoolId")
+public class ParentProfile extends AuditableEntity implements SchoolAware {
+
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "school_id", nullable = false)
+    private School school;
+
     @OneToOne
     @JoinColumn(name = "parent_id", nullable = false)
     private User parent;
@@ -35,13 +39,11 @@ public class ParentProfile {
     private String additionalInfo;
 
     // Getters and setters
-    public Long getId() {
-        return id;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @Override
+    public School getSchool() { return school; }
+    @Override
+    public void setSchool(School school) { this.school = school; }
 
     public User getParent() {
         return parent;

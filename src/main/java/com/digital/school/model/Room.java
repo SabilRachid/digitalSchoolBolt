@@ -1,16 +1,19 @@
 package com.digital.school.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
+
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "rooms")
-public class Room {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@Filter(name = "schoolFilter", condition = "school_id = :schoolId")
+public class Room extends AuditableEntity {
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "school_id", nullable = false)
+    private School school;
     
     @Column(nullable = false, unique = true)
     private String name;
@@ -43,13 +46,9 @@ public class Room {
     private String maintenanceNotes;
 
     // Getters and setters
-    public Long getId() {
-        return id;
-    }
+    public School getSchool() { return school; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public void setSchool(School school) { this.school = school; }
 
     public String getName() {
         return name;

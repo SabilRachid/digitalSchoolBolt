@@ -1,16 +1,19 @@
 package com.digital.school.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
+
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "student_profiles")
-public class StudentProfile {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
+@Filter(name = "schoolFilter", condition = "school_id = :schoolId")
+public class StudentProfile extends AuditableEntity {
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "school_id", nullable = false)
+    private School school;
+
     @OneToOne
     @JoinColumn(name = "student_id", nullable = false)
     private User student;
@@ -50,13 +53,10 @@ public class StudentProfile {
     private String specialNeeds;
 
     // Getters and setters
-    public Long getId() {
-        return id;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public School getSchool() { return school; }
+
+    public void setSchool(School school) { this.school = school; }
 
     public User getStudent() {
         return student;

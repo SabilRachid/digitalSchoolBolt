@@ -1,20 +1,29 @@
 package com.digital.school.model;
 
+import com.digital.school.config.school.SchoolAware;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name = "classes")
-public class Classe {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
+@FilterDef(name = "schoolFilter", parameters = @ParamDef(name = "schoolId", type = Long.class))
+@Filter(name = "schoolFilter", condition = "school_id = :schoolId")
+public class Classe extends AuditableEntity implements SchoolAware {
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "school_id", nullable = false)
+    private School school;
+
     @Column(nullable = false)
     private String name;
     
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "level_id", nullable = false)
     private Level level;
@@ -25,7 +34,7 @@ public class Classe {
     private String schoolYear;
     
     @OneToMany(mappedBy = "classe")
-    private Set<User> students = new HashSet<>();
+    private Set<Student> students = new HashSet<>();
     
     @ManyToMany
     @JoinTable(
@@ -35,16 +44,18 @@ public class Classe {
     )
     private Set<Subject> subjects = new HashSet<>();
 
+
+    @ManyToMany(mappedBy = "classes") // Relation bidirectionnelle avec Professor
+    private Set<Professor> professors = new HashSet<>();
+
     public Classe() {
     }
 
-    public Long getId() {
-        return id;
-    }
+    @Override
+    public School getSchool() { return school; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @Override
+    public void setSchool(School school) { this.school = school; }
 
     public String getName() {
         return name;
@@ -78,11 +89,11 @@ public class Classe {
         this.schoolYear = schoolYear;
     }
 
-    public Set<User> getStudents() {
+    public Set<Student> getStudents() {
         return students;
     }
 
-    public void setStudents(Set<User> students) {
+    public void setStudents(Set<Student> students) {
         this.students = students != null ? students : new HashSet<>();
     }
 
@@ -92,6 +103,14 @@ public class Classe {
 
     public void setSubjects(Set<Subject> subjects) {
         this.subjects = subjects != null ? subjects : new HashSet<>();
+    }
+
+    public
+    Set<Professor> getProfessors() {
+        return professors;
+    }
+    public void setProfessors(Set<Professor> professors) {
+        this.professors = professors != null ? professors : new HashSet<>();
     }
 
     @Override

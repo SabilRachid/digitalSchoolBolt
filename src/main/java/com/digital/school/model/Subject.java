@@ -1,17 +1,20 @@
 package com.digital.school.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
+
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "subjects")
-public class Subject {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
+@Filter(name = "schoolFilter", condition = "school_id = :schoolId")
+public class Subject extends AuditableEntity {
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "school_id", nullable = false)
+    private School school;
+
     @Column(nullable = false, unique = true)
     private String code;
     
@@ -26,7 +29,10 @@ public class Subject {
     
     @Column(name = "is_optional")
     private boolean optional = false;
-    
+
+    @ManyToMany(mappedBy = "subjects") // Relation bidirectionnelle avec Professor
+    private Set<Professor> professors = new HashSet<>();
+
     @ManyToMany(mappedBy = "subjects")
     private Set<Level> levels = new HashSet<>();
     
@@ -39,13 +45,9 @@ public class Subject {
     public Subject() {
     }
 
-    public Long getId() {
-        return id;
-    }
+    public School getSchool() { return school; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public void setSchool(School school) { this.school = school; }
 
     public String getCode() {
         return code;
@@ -86,6 +88,15 @@ public class Subject {
     public void setOptional(boolean optional) {
         this.optional = optional;
     }
+
+    public Set<Professor> getProfessors() {
+        return professors;
+    }
+
+    public void setProfessors(Set<Professor> professors) {
+        this.professors = professors;
+    }
+
 
     public Set<Level> getLevels() {
         return levels;

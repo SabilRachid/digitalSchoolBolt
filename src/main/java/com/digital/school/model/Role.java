@@ -2,17 +2,20 @@ package com.digital.school.model;
 
 import jakarta.persistence.*;
 import com.digital.school.model.enumerated.RoleName;
+import org.hibernate.annotations.Filter;
+
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "roles")
-public class Role {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
+@Filter(name = "schoolFilter", condition = "school_id = :schoolId")
+public class Role extends AuditableEntity {
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "school_id", nullable = false)
+    private School school;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true)
     private RoleName name;
@@ -32,13 +35,9 @@ public class Role {
         this.name = name;
     }
 
-    public Long getId() {
-        return id;
-    }
+    public School getSchool() { return school; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public void setSchool(School school) { this.school = school; }
 
     public RoleName getName() {
         return name;

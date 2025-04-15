@@ -1,56 +1,58 @@
 package com.digital.school.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
+@Inheritance(strategy = InheritanceType.JOINED) // Stratégie pour gérer les sous-classes
 @Table(name = "users")
-public class User implements UserDetails {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
+@Filter(name = "schoolFilter", condition = "school_id = :schoolId")
+public class User extends AuditableEntity implements UserDetails {
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "school_id", nullable = false)
+    private School school;
+
     @Column(nullable = false, unique = true)
     private String username;
-    
+
     private String firstName;
     private String lastName;
-    
+
     @Column(unique = true)
     private String email;
-    
+
+    @Column(unique = true)
+    private String phone;
+
     private String password;
-    
+
     private boolean enabled = true;
-    
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-        name = "user_roles",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "role_id")
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles = new HashSet<>();
-    
-    @ManyToOne
-    @JoinColumn(name = "class_id")
-    private Classe classe;
 
     public User() {
     }
 
-    public Long getId() {
-        return id;
-    }
+    public School getSchool() { return school; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public void setSchool(School school) { this.school = school; }
 
     @Override
     public String getUsername() {
@@ -85,6 +87,14 @@ public class User implements UserDetails {
         this.email = email;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
     @Override
     public String getPassword() {
         return password;
@@ -111,12 +121,13 @@ public class User implements UserDetails {
         this.roles = roles != null ? roles : new HashSet<>();
     }
 
+    /**
+     * Méthode transitoire permettant de récupérer la classe associée.
+     * Par défaut, renvoie null. Les entités filles (comme Student) surchargeront cette méthode.
+     */
+    @Transient
     public Classe getClasse() {
-        return classe;
-    }
-
-    public void setClasse(Classe classe) {
-        this.classe = classe;
+        return null;
     }
 
     @Override
@@ -125,7 +136,7 @@ public class User implements UserDetails {
         roles.forEach(role -> {
             authorities.add(new SimpleGrantedAuthority(role.getName().toString()));
             role.getPermissions().forEach(permission ->
-                authorities.add(new SimpleGrantedAuthority(permission.getName().toString()))
+                    authorities.add(new SimpleGrantedAuthority(permission.getName().toString()))
             );
         });
         return authorities;
@@ -157,5 +168,9 @@ public class User implements UserDetails {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    public Serializable getAvatar() {
+        return null;
     }
 }
