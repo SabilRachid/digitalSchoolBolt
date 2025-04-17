@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modification d'Emploi du Temps</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #F56565;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+        .button {
+            display: inline-block;
+            background-color: #F56565;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .change-box {
+            background-color: #e9ecef;
+            border-left: 4px solid #F56565;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #F56565;
+        }
+        .change-type {
+            font-size: 18px;
+            font-weight: bold;
+            color: #F56565;
+            margin: 10px 0;
+        }
+        .comparison {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+        }
+        .old-value, .new-value {
+            width: 48%;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .old-value {
+            background-color: #FED7D7;
+        }
+        .new-value {
+            background-color: #C6F6D5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Modification d'Emploi du Temps</h1>
+        </div>
+        <div class="content">
+            <p>Bonjour {{recipientName}},</p>
+            
+            <p>Nous vous informons qu'une modification a été apportée à l'emploi du temps {{#if isStudent}}de {{studentName}}{{else}}de votre classe{{/if}}.</p>
+            
+            <div class="change-box">
+                <p class="change-type">{{changeType}}</p>
+                
+                <p><strong>Détails :</strong></p>
+                <ul>
+                    <li>Classe : {{className}}</li>
+                    <li>Matière : {{subject}}</li>
+                    <li>Professeur : {{professorName}}</li>
+                </ul>
+                
+                {{#if isRescheduled}}
+                <div class="comparison">
+                    <div class="old-value">
+                        <strong>Ancienne date :</strong><br>
+                        {{oldDate}}<br>
+                        {{oldTime}}<br>
+                        {{#if oldRoom}}Salle : {{oldRoom}}{{/if}}
+                    </div>
+                    <div class="new-value">
+                        <strong>Nouvelle date :</strong><br>
+                        {{newDate}}<br>
+                        {{newTime}}<br>
+                        {{#if newRoom}}Salle : {{newRoom}}{{/if}}
+                    </div>
+                </div>
+                {{else if isCancelled}}
+                <p><strong>Cours annulé :</strong> {{oldDate}} à {{oldTime}}</p>
+                {{else if isRoomChange}}
+                <div class="comparison">
+                    <div class="old-value">
+                        <strong>Ancienne salle :</strong><br>
+                        {{oldRoom}}
+                    </div>
+                    <div class="new-value">
+                        <strong>Nouvelle salle :</strong><br>
+                        {{newRoom}}
+                    </div>
+                </div>
+                {{else if isProfessorChange}}
+                <div class="comparison">
+                    <div class="old-value">
+                        <strong>Ancien professeur :</strong><br>
+                        {{oldProfessorName}}
+                    </div>
+                    <div class="new-value">
+                        <strong>Nouveau professeur :</strong><br>
+                        {{newProfessorName}}
+                    </div>
+                </div>
+                {{/if}}
+                
+                {{#if reason}}
+                <p><strong>Raison :</strong> {{reason}}</p>
+                {{/if}}
+            </div>
+            
+            <p>Vous pouvez consulter l'emploi du temps complet en vous connectant à votre espace personnel.</p>
+            
+            <a href="{{calendarUrl}}" class="button">Voir l'emploi du temps</a>
+            
+            <p>Cordialement,<br>
+            L'équipe de {{schoolName}}</p>
+        </div>
+        <div class="footer">
+            <p>Ce message a été envoyé automatiquement, merci de ne pas y répondre.</p>
+            <p>{{schoolName}} - {{schoolAddress}} - {{schoolPhone}}</p>
+            <p>Pour gérer vos préférences de notification, <a href="{{preferencesUrl}}">cliquez ici</a>.</p>
+        </div>
+    </div>
+</body>
+</html>

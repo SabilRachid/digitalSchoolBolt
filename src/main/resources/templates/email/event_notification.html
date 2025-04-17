@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouvel Événement</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #4299E1;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4299E1;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .event-box {
+            background-color: #e9ecef;
+            border-left: 4px solid #4299E1;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #4299E1;
+        }
+        .event-date {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4299E1;
+            margin: 10px 0;
+        }
+        .calendar-icon {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .calendar-icon img {
+            width: 60px;
+            height: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Nouvel Événement</h1>
+        </div>
+        <div class="content">
+            <p>Bonjour {{recipientName}},</p>
+            
+            <p>Un nouvel événement a été ajouté au calendrier : <span class="highlight">{{eventTitle}}</span>.</p>
+            
+            <div class="calendar-icon">
+                <img src="https://cdn-icons-png.flaticon.com/512/55/55281.png" alt="Calendar">
+            </div>
+            
+            <div class="event-box">
+                <p><strong>Détails de l'événement :</strong></p>
+                <ul>
+                    <li>Titre : {{eventTitle}}</li>
+                    <li>Type : {{eventType}}</li>
+                    {{#if location}}<li>Lieu : {{location}}</li>{{/if}}
+                </ul>
+                
+                <p class="event-date">
+                    {{#if allDay}}
+                        Date : {{eventDate}}
+                    {{else}}
+                        Date et heure : {{eventDate}} de {{startTime}} à {{endTime}}
+                    {{/if}}
+                </p>
+                
+                {{#if description}}
+                <p><strong>Description :</strong></p>
+                <p>{{description}}</p>
+                {{/if}}
+                
+                {{#if organizer}}
+                <p><strong>Organisateur :</strong> {{organizer}}</p>
+                {{/if}}
+            </div>
+            
+            <p>Vous pouvez consulter tous les événements en vous connectant à votre espace personnel.</p>
+            
+            <a href="{{calendarUrl}}" class="button">Voir le calendrier</a>
+            
+            <p>Cordialement,<br>
+            L'équipe de {{schoolName}}</p>
+        </div>
+        <div class="footer">
+            <p>Ce message a été envoyé automatiquement, merci de ne pas y répondre.</p>
+            <p>{{schoolName}} - {{schoolAddress}} - {{schoolPhone}}</p>
+            <p>Pour gérer vos préférences de notification, <a href="{{preferencesUrl}}">cliquez ici</a>.</p>
+        </div>
+    </div>
+</body>
+</html>

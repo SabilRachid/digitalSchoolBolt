@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouvelle Note Disponible</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #48BB78;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+        .button {
+            display: inline-block;
+            background-color: #48BB78;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .grade-box {
+            background-color: #e9ecef;
+            border-left: 4px solid #48BB78;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #48BB78;
+        }
+        .grade {
+            font-size: 24px;
+            font-weight: bold;
+            color: #48BB78;
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Nouvelle Note Disponible</h1>
+        </div>
+        <div class="content">
+            <p>Bonjour {{recipientName}},</p>
+            
+            <p>Une nouvelle note est disponible pour {{studentName}} en <span class="highlight">{{subject}}</span>.</p>
+            
+            <div class="grade-box">
+                <p><strong>Détails de l'évaluation :</strong></p>
+                <ul>
+                    <li>Élève : {{studentName}}</li>
+                    <li>Classe : {{className}}</li>
+                    <li>Matière : {{subject}}</li>
+                    <li>Professeur : {{professorName}}</li>
+                    <li>Type d'évaluation : {{evaluationType}}</li>
+                    <li>Date de l'évaluation : {{evaluationDate}}</li>
+                </ul>
+                
+                <div class="grade">
+                    {{grade}} / {{maxGrade}}
+                </div>
+                
+                {{#if classAverage}}
+                <p>Moyenne de la classe : {{classAverage}} / {{maxGrade}}</p>
+                {{/if}}
+                
+                {{#if comment}}
+                <p><strong>Commentaire :</strong> {{comment}}</p>
+                {{/if}}
+            </div>
+            
+            <p>Vous pouvez consulter le détail de cette note et toutes les autres évaluations en vous connectant à votre espace personnel.</p>
+            
+            <a href="{{portalUrl}}" class="button">Accéder à l'espace personnel</a>
+            
+            <p>Cordialement,<br>
+            L'équipe de {{schoolName}}</p>
+        </div>
+        <div class="footer">
+            <p>Ce message a été envoyé automatiquement, merci de ne pas y répondre.</p>
+            <p>{{schoolName}} - {{schoolAddress}} - {{schoolPhone}}</p>
+            <p>Pour gérer vos préférences de notification, <a href="{{preferencesUrl}}">cliquez ici</a>.</p>
+        </div>
+    </div>
+</body>
+</html>
