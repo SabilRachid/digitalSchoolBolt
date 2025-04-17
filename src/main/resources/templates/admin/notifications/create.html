@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>Créer une Notification - Digital School</title>
+    
+    <!-- CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/digitalSchool.css}">
+    <link rel="stylesheet" th:href="@{/css/components/sidebar.css}">
+    <link rel="stylesheet" th:href="@{/css/components/topbar.css}">
+    <link rel="stylesheet" th:href="@{/css/components/forms.css}">
+    <link rel="stylesheet" th:href="@{/css/components/buttons.css}">
+    <link rel="stylesheet" th:href="@{/css/components/tabs.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">
+                <i class="fas fa-bell"></i>
+                Créer une Notification
+            </h1>
+            <a href="/admin/notifications" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Retour
+            </a>
+        </div>
+
+        <div class="form-container">
+            <form id="notificationForm" class="form">
+                <div class="tabs-container">
+                    <ul class="tabs-nav">
+                        <li class="tab-item active" data-tab="content">
+                            <i class="fas fa-edit"></i>
+                            Contenu
+                        </li>
+                        <li class="tab-item" data-tab="recipients">
+                            <i class="fas fa-users"></i>
+                            Destinataires
+                        </li>
+                        <li class="tab-item" data-tab="settings">
+                            <i class="fas fa-cog"></i>
+                            Paramètres
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content">
+                        <!-- Content Tab -->
+                        <div id="content" class="tab-pane active">
+                            <div class="form-section">
+                                <div class="form-group">
+                                    <label for="useTemplate">Utiliser un modèle</label>
+                                    <div class="form-check">
+                                        <input type="checkbox" id="useTemplate" name="useTemplate" class="form-check-input">
+                                        <label for="useTemplate" class="form-check-label">Utiliser un modèle prédéfini</label>
+                                    </div>
+                                </div>
+                                
+                                <div id="templateSelection" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="templateName">Modèle</label>
+                                        <select id="templateName" name="templateName" class="form-select">
+                                            <option value="">Sélectionner un modèle</option>
+                                            <option th:each="template : ${templates}" 
+                                                    th:value="${template.name}" 
+                                                    th:text="${template.name}">
+                                                Nom du modèle
+                                            </option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div id="templateVariables" class="form-group" style="display: none;">
+                                        <label>Variables du modèle</label>
+                                        <div id="templateVariablesFields">
+                                            <!-- Template variables will be added here dynamically -->
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="directContent">
+                                    <div class="form-group">
+                                        <label for="subject">Sujet</label>
+                                        <input type="text" id="subject" name="subject" class="form-control" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="content">Contenu</label>
+                                        <textarea id="content" name="content" class="form-control" rows="10" required></textarea>
+                                        <small class="form-text">Vous pouvez utiliser du HTML pour le formatage.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Recipients Tab -->
+                        <div id="recipients" class="tab-pane">
+                            <div class="form-section">
+                                <div class="form-group">
+                                    <label for="recipientType">Type de destinataires</label>
+                                    <select id="recipientType" name="recipientType" class="form-select" required>
+                                        <option value="">Sélectionner un type</option>
+                                        <option value="ALL">Tous les utilisateurs</option>
+                                        <option value="STUDENTS">Tous les élèves</option>
+                                        <option value="PARENTS">Tous les parents</option>
+                                        <option value="PROFESSORS">Tous les professeurs</option>
+                                        <option value="ADMINS">Tous les administrateurs</option>
+                                        <option value="CLASS">Une classe spécifique</option>
+                                        <option value="SPECIFIC">Utilisateurs spécifiques</option>
+                                    </select>
+                                </div>
+                                
+                                <div id="classSelection" class="form-group" style="display: none;">
+                                    <label for="classId">Classe</label>
+                                    <select id="classId" name="classId" class="form-select">
+                                        <option value="">Sélectionner une classe</option>
+                                        <option th:each="class : ${classes}" 
+                                                th:value="${class.id}" 
+                                                th:text="${class.name}">
+                                            Nom de la classe
+                                        </option>
+                                    </select>
+                                </div>
+                                
+                                <div id="specificRecipients" class="form-group" style="display: none;">
+                                    <label for="recipientIds">Destinataires</label>
+                                    <select id="recipientIds" name="recipientIds" class="form-select" multiple>
+                                        <!-- Recipients will be loaded dynamically -->
+                                    </select>
+                                    <small class="form-text">Maintenez la touche Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs destinataires.</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Settings Tab -->
+                        <div id="settings" class="tab-pane">
+                            <div class="form-section">
+                                <div class="form-group">
+                                    <label for="type">Type de notification</label>
+                                    <select id="type" name="type" class="form-select" required>
+                                        <option value="">Sélectionner un type</option>
+                                        <option th:each="type : ${notificationTypes}" 
+                                                th:value="${type}" 
+                                                th:text="${type}">
+                                            Type de notification
+                                        </option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="category">Catégorie</label>
+                                    <select id="category" name="category" class="form-select" required>
+                                        <option value="">Sélectionner une catégorie</option>
+                                        <option th:each="category : ${notificationCategories}" 
+                                                th:value="${category}" 
+                                                th:text="${category}">
+                                            Catégorie
+                                        </option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="priority">Priorité</label>
+                                    <select id="priority" name="priority" class="form-select" required>
+                                        <option value="">Sélectionner une priorité</option>
+                                        <option th:each="priority : ${notificationPriorities}" 
+                                                th:value="${priority}" 
+                                                th:text="${priority}">
+                                            Priorité
+                                        </option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="scheduled">Planifier l'envoi</label>
+                                    <div class="form-check">
+                                        <input type="checkbox" id="scheduled" name="scheduled" class="form-check-input">
+                                        <label for="scheduled" class="form-check-label">Planifier l'envoi pour plus tard</label>
+                                    </div>
+                                </div>
+                                
+                                <div id="scheduledDateTime" class="form-group" style="display: none;">
+                                    <label for="scheduledFor">Date et heure d'envoi</label>
+                                    <input type="datetime-local" id="scheduledFor" name="scheduledFor" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='/admin/notifications'">
+                        Annuler
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i>
+                        Envoyer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tabs functionality
+            document.querySelectorAll('.tab-item').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    document.getElementById(this.dataset.tab).classList.add('active');
+                });
+            });
+            
+            // Template toggle
+            document.getElementById('useTemplate').addEventListener('change', function() {
+                document.getElementById('templateSelection').style.display = this.checked ? 'block' : 'none';
+                document.getElementById('directContent').style.display = this.checked ? 'none' : 'block';
+            });
+            
+            // Template selection
+            document.getElementById('templateName').addEventListener('change', function() {
+                if (this.value) {
+                    loadTemplateVariables(this.value);
+                } else {
+                    document.getElementById('templateVariables').style.display = 'none';
+                }
+            });
+            
+            // Recipient type selection
+            document.getElementById('recipientType').addEventListener('change', function() {
+                document.getElementById('classSelection').style.display = this.value === 'CLASS' ? 'block' : 'none';
+                document.getElementById('specificRecipients').style.display = this.value === 'SPECIFIC' ? 'block' : 'none';
+                
+                if (this.value === 'SPECIFIC') {
+                    loadRecipients();
+                }
+            });
+            
+            // Scheduled toggle
+            document.getElementById('scheduled').addEventListener('change', function() {
+                document.getElementById('scheduledDateTime').style.display = this.checked ? 'block' : 'none';
+            });
+            
+            // Form submission
+            document.getElementById('notificationForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                sendNotification();
+            });
+        });
+        
+        async function loadTemplateVariables(templateName) {
+            try {
+                const response = await fetch(`/admin/notifications/templates/variables?name=${encodeURIComponent(templateName)}`);
+                if (!response.ok) {
+                    throw new Error('Failed to load template variables');
+                }
+                
+                const template = await response.json();
+                const variablesContainer = document.getElementById('templateVariablesFields');
+                variablesContainer.innerHTML = '';
+                
+                if (template.availableVariables) {
+                    const variables = template.availableVariables.split(',');
+                    
+                    variables.forEach(variable => {
+                        const varName = variable.trim();
+                        if (varName) {
+                            const formGroup = document.createElement('div');
+                            formGroup.className = 'form-group';
+                            
+                            const label = document.createElement('label');
+                            label.setAttribute('for', `var_${varName}`);
+                            label.textContent = varName;
+                            
+                            const input = document.createElement('input');
+                            input.type = 'text';
+                            input.id = `var_${varName}`;
+                            input.name = `var_${varName}`;
+                            input.className = 'form-control';
+                            input.dataset.variable = varName;
+                            
+                            formGroup.appendChild(label);
+                            formGroup.appendChild(input);
+                            variablesContainer.appendChild(formGroup);
+                        }
+                    });
+                    
+                    document.getElementById('templateVariables').style.display = 'block';
+                } else {
+                    document.getElementById('templateVariables').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading template variables:', error);
+                alert('Failed to load template variables: ' + error.message);
+            }
+        }
+        
+        async function loadRecipients() {
+            try {
+                const response = await fetch('/admin/users/list');
+                if (!response.ok) {
+                    throw new Error('Failed to load recipients');
+                }
+                
+                const users = await response.json();
+                const select = document.getElementById('recipientIds');
+                select.innerHTML = '';
+                
+                users.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.textContent = `${user.lastName} ${user.firstName} (${user.email})`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading recipients:', error);
+                alert('Failed to load recipients: ' + error.message);
+            }
+        }
+        
+        async function sendNotification() {
+            try {
+                const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+                
+                // Prepare data
+                const useTemplate = document.getElementById('useTemplate').checked;
+                const recipientType = document.getElementById('recipientType').value;
+                
+                const data = {
+                    type: document.getElementById('type').value,
+                    category: document.getElementById('category').value,
+                    priority: document.getElementById('priority').value,
+                    recipientType: recipientType
+                };
+                
+                // Add recipient-specific data
+                if (recipientType === 'CLASS') {
+                    data.classId = parseInt(document.getElementById('classId').value);
+                } else if (recipientType === 'SPECIFIC') {
+                    const select = document.getElementById('recipientIds');
+                    data.recipientIds = Array.from(select.selectedOptions).map(option => parseInt(option.value));
+                }
+                
+                // Add content
+                if (useTemplate) {
+                    data.useTemplate = true;
+                    data.templateName = document.getElementById('templateName').value;
+                    
+                    // Collect template variables
+                    const templateData = {};
+                    document.querySelectorAll('#templateVariablesFields input').forEach(input => {
+                        templateData[input.dataset.variable] = input.value;
+                    });
+                    
+                    data.templateData = templateData;
+                } else {
+                    data.useTemplate = false;
+                    data.subject = document.getElementById('subject').value;
+                    data.content = document.getElementById('content').value;
+                }
+                
+                // Add scheduled time if needed
+                if (document.getElementById('scheduled').checked) {
+                    data.scheduledFor = document.getElementById('scheduledFor').value;
+                }
+                
+                // Send request
+                const response = await fetch('/admin/notifications', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [csrfHeader]: csrfToken
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to send notification');
+                }
+                
+                // Redirect to notifications list
+                window.location.href = '/admin/notifications?success=true';
+            } catch (error) {
+                console.error('Error sending notification:', error);
+                alert('Failed to send notification: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

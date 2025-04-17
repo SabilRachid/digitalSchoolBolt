@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>Gestion des Notifications - Digital School</title>
+    
+    <!-- CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/digitalSchool.css}">
+    <link rel="stylesheet" th:href="@{/css/sidebar.css}">
+    <link rel="stylesheet" th:href="@{/css/topbar.css}">
+    <link rel="stylesheet" th:href="@{/css/components/tables.css}">
+    <link rel="stylesheet" th:href="@{/css/components/cards.css}">
+    <link rel="stylesheet" th:href="@{/css/components/badges.css}">
+    <link rel="stylesheet" th:href="@{/css/components/charts.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">
+                <i class="fas fa-bell"></i>
+                Gestion des Notifications
+            </h1>
+            <div class="header-actions">
+                <a href="/admin/notifications/create" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Créer une notification
+                </a>
+                <a href="/admin/notifications/templates" class="btn btn-secondary">
+                    <i class="fas fa-file-alt"></i>
+                    Modèles
+                </a>
+            </div>
+        </div>
+
+        <!-- Success message -->
+        <div th:if="${param.success}" class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            <div class="alert-content">
+                <div class="alert-title">Notification envoyée</div>
+                <div class="alert-text">La notification a été créée et envoyée avec succès.</div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-paper-plane"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Notifications Envoyées</h3>
+                    <div class="stat-value" id="totalSent">-</div>
+                    <div class="stat-label">30 derniers jours</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Emails</h3>
+                    <div class="stat-value" id="emailCount">-</div>
+                    <div class="stat-label">30 derniers jours</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-sms"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>SMS</h3>
+                    <div class="stat-value" id="smsCount">-</div>
+                    <div class="stat-label">30 derniers jours</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Notifications Push</h3>
+                    <div class="stat-value" id="pushCount">-</div>
+                    <div class="stat-label">30 derniers jours</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filter-group">
+                <label for="typeFilter">Type</label>
+                <select id="typeFilter" class="form-select">
+                    <option value="">Tous les types</option>
+                    <option th:each="type : ${notificationTypes}" 
+                            th:value="${type}" 
+                            th:text="${type}">
+                        Type
+                    </option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="categoryFilter">Catégorie</label>
+                <select id="categoryFilter" class="form-select">
+                    <option value="">Toutes les catégories</option>
+                    <option th:each="category : ${notificationCategories}" 
+                            th:value="${category}" 
+                            th:text="${category}">
+                        Catégorie
+                    </option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="statusFilter">Statut</label>
+                <select id="statusFilter" class="form-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="PENDING">En attente</option>
+                    <option value="SENT">Envoyée</option>
+                    <option value="FAILED">Échouée</option>
+                    <option value="CANCELLED">Annulée</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="searchInput">Recherche</label>
+                <div class="search-input">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Rechercher...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Table -->
+        <div class="table-container">
+            <table id="notificationsTable" class="table">
+                <thead>
+                    <tr>
+                        <th>Sujet</th>
+                        <th>Type</th>
+                        <th>Catégorie</th>
+                        <th>Destinataires</th>
+                        <th>Date de création</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+
+    <script th:src="@{/js/admin/common.js}"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
+    <script th:src="@{/js/topbar.js}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load notifications data
+            loadNotificationsData();
+            
+            // Load statistics
+            loadStatistics();
+            
+            // Set up filters
+            document.getElementById('typeFilter').addEventListener('change', loadNotificationsData);
+            document.getElementById('categoryFilter').addEventListener('change', loadNotificationsData);
+            document.getElementById('statusFilter').addEventListener('change', loadNotificationsData);
+            document.getElementById('searchInput').addEventListener('input', filterTable);
+        });
+        
+        async function loadNotificationsData() {
+            try {
+                const type = document.getElementById('typeFilter').value;
+                const category = document.getElementById('categoryFilter').value;
+                const status = document.getElementById('statusFilter').value;
+                
+                let url = '/admin/notifications/data';
+                const params = [];
+                
+                if (type) {
+                    params.push(`type=${encodeURIComponent(type)}`);
+                }
+                
+                if (category) {
+                    params.push(`category=${encodeURIComponent(category)}`);
+                }
+                
+                if (status) {
+                    params.push(`status=${encodeURIComponent(status)}`);
+                }
+                
+                if (params.length > 0) {
+                    url += '?' + params.join('&');
+                }
+                
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Failed to load notifications data');
+                }
+                
+                const notifications = await response.json();
+                populateNotificationsTable(notifications);
+            } catch (error) {
+                console.error('Error loading notifications data:', error);
+                alert('Failed to load notifications data: ' + error.message);
+            }
+        }
+        
+        function populateNotificationsTable(notifications) {
+            const tableBody = document.querySelector('#notificationsTable tbody');
+            tableBody.innerHTML = '';
+            
+            if (notifications.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="7" class="text-center">Aucune notification trouvée</td>
+                `;
+                tableBody.appendChild(row);
+                return;
+            }
+            
+            notifications.forEach(notification => {
+                const row = document.createElement('tr');
+                
+                // Format date
+                const createdAt = new Date(notification.createdAt).toLocaleString('fr-FR');
+                
+                // Status badge
+                const statusBadge = getStatusBadge(notification.status);
+                
+                row.innerHTML = `
+                    <td>${notification.subject}</td>
+                    <td>${notification.type}</td>
+                    <td>${notification.category || '-'}</td>
+                    <td>${notification.recipientCount}</td>
+                    <td>${createdAt}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="/admin/notifications/${notification.id}" class="action-button view">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            ${notification.status === 'PENDING' ? `
+                                <button class="action-button send" onclick="sendNotification(${notification.id})">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            ` : ''}
+                            ${notification.status === 'FAILED' ? `
+                                <button class="action-button retry" onclick="retryNotification(${notification.id})">
+                                    <i class="fas fa-redo"></i>
+                                </button>
+                            ` : ''}
+                            ${notification.status === 'PENDING' ? `
+                                <button class="action-button delete" onclick="deleteNotification(${notification.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/admin/notifications/statistics');
+                if (!response.ok) {
+                    throw new Error('Failed to load statistics');
+                }
+                
+                const stats = await response.json();
+                
+                // Update statistics cards
+                document.getElementById('totalSent').textContent = stats.totalSent || 0;
+                
+                // Update channel counts
+                const channelCounts = stats.channelCounts || {};
+                document.getElementById('emailCount').textContent = channelCounts.EMAIL || 0;
+                document.getElementById('smsCount').textContent = channelCounts.SMS || 0;
+                document.getElementById('pushCount').textContent = channelCounts.PUSH || 0;
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+        
+        function filterTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#notificationsTable tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        async function sendNotification(id) {
+            if (!confirm('Êtes-vous sûr de vouloir envoyer cette notification maintenant ?')) {
+                return;
+            }
+            
+            try {
+                const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+                
+                const response = await fetch(`/admin/notifications/${id}/send`, {
+                    method: 'POST',
+                    headers: {
+                        [csrfHeader]: csrfToken
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to send notification');
+                }
+                
+                // Reload data
+                loadNotificationsData();
+                
+            } catch (error) {
+                console.error('Error sending notification:', error);
+                alert('Failed to send notification: ' + error.message);
+            }
+        }
+        
+        async function retryNotification(id) {
+            if (!confirm('Êtes-vous sûr de vouloir réessayer d\'envoyer cette notification ?')) {
+                return;
+            }
+            
+            try {
+                const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+                
+                const response = await fetch(`/admin/notifications/${id}/retry`, {
+                    method: 'POST',
+                    headers: {
+                        [csrfHeader]: csrfToken
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to retry notification');
+                }
+                
+                // Reload data
+                loadNotificationsData();
+                
+            } catch (error) {
+                console.error('Error retrying notification:', error);
+                alert('Failed to retry notification: ' + error.message);
+            }
+        }
+        
+        async function deleteNotification(id) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette notification ?')) {
+                return;
+            }
+            
+            try {
+                const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+                
+                const response = await fetch(`/admin/notifications/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        [csrfHeader]: csrfToken
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to delete notification');
+                }
+                
+                // Reload data
+                loadNotificationsData();
+                
+            } catch (error) {
+                console.error('Error deleting notification:', error);
+                alert('Failed to delete notification: ' + error.message);
+            }
+        }
+        
+        // Utility functions
+        function getStatusBadge(status) {
+            const statusClasses = {
+                'PENDING': 'badge-warning',
+                'SENT': 'badge-success',
+                'FAILED': 'badge-danger',
+                'CANCELLED': 'badge-secondary'
+            };
+            
+            const statusLabels = {
+                'PENDING': 'En attente',
+                'SENT': 'Envoyée',
+                'FAILED': 'Échouée',
+                'CANCELLED': 'Annulée'
+            };
+            
+            return `<span class="badge ${statusClasses[status]}">${statusLabels[status]}</span>`;
+        }
+    </script>
+</body>
+</html>
