@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>Préférences de Notification - Digital School</title>
+    
+    <!-- CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/digitalSchool.css}">
+    <link rel="stylesheet" th:href="@{/css/components/sidebar.css}">
+    <link rel="stylesheet" th:href="@{/css/components/topbar.css}">
+    <link rel="stylesheet" th:href="@{/css/components/forms.css}">
+    <link rel="stylesheet" th:href="@{/css/components/buttons.css}">
+    <link rel="stylesheet" th:href="@{/css/components/tabs.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">
+                <i class="fas fa-bell"></i>
+                Préférences de Notification
+            </h1>
+        </div>
+
+        <!-- Success message -->
+        <div id="successMessage" class="alert alert-success" style="display: none;">
+            <i class="fas fa-check-circle"></i>
+            <div class="alert-content">
+                <div class="alert-title">Préférences mises à jour</div>
+                <div class="alert-text">Vos préférences de notification ont été mises à jour avec succès.</div>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <form id="preferencesForm" class="form">
+                <div class="tabs-container">
+                    <ul class="tabs-nav">
+                        <li th:each="category, iterStat : ${categories}" 
+                            class="tab-item" 
+                            th:classappend="${iterStat.first ? 'active' : ''}" 
+                            th:data-tab="${category}">
+                            <i th:class="${
+                                category == 'ATTENDANCE' ? 'fas fa-user-check' :
+                                category == 'GRADES' ? 'fas fa-star' :
+                                category == 'HOMEWORK' ? 'fas fa-tasks' :
+                                category == 'EXAMS' ? 'fas fa-file-alt' :
+                                category == 'EVENTS' ? 'fas fa-calendar-alt' :
+                                category == 'ANNOUNCEMENTS' ? 'fas fa-bullhorn' :
+                                category == 'MESSAGES' ? 'fas fa-envelope' :
+                                category == 'PAYMENTS' ? 'fas fa-money-bill-wave' :
+                                'fas fa-cog'
+                            }"></i>
+                            <span th:text="${category}">Catégorie</span>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content">
+                        <!-- Category Tabs -->
+                        <div th:each="category, iterStat : ${categories}" 
+                             th:id="${category}" 
+                             class="tab-pane" 
+                             th:classappend="${iterStat.first ? 'active' : ''}">
+                            
+                            <div class="form-section">
+                                <h2 class="section-title" th:text="${category}">Catégorie</h2>
+                                
+                                <div class="form-group">
+                                    <label>Canaux de notification</label>
+                                    <div class="channels-grid">
+                                        <div class="channel-item">
+                                            <div class="form-check">
+                                                <input type="checkbox" 
+                                                       th:id="${category + '_email'}" 
+                                                       th:name="${category + '_email'}" 
+                                                       class="form-check-input"
+                                                       th:checked="${preferences[category].emailEnabled}">
+                                                <label th:for="${category + '_email'}" class="form-check-label">
+                                                    <i class="fas fa-envelope"></i>
+                                                    Email
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="channel-item">
+                                            <div class="form-check">
+                                                <input type="checkbox" 
+                                                       th:id="${category + '_sms'}" 
+                                                       th:name="${category + '_sms'}" 
+                                                       class="form-check-input"
+                                                       th:checked="${preferences[category].smsEnabled}">
+                                                <label th:for="${category + '_sms'}" class="form-check-label">
+                                                    <i class="fas fa-sms"></i>
+                                                    SMS
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="channel-item">
+                                            <div class="form-check">
+                                                <input type="checkbox" 
+                                                       th:id="${category + '_push'}" 
+                                                       th:name="${category + '_push'}" 
+                                                       class="form-check-input"
+                                                       th:checked="${preferences[category].pushEnabled}">
+                                                <label th:for="${category + '_push'}" class="form-check-label">
+                                                    <i class="fas fa-mobile-alt"></i>
+                                                    Notifications Push
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="channel-item">
+                                            <div class="form-check">
+                                                <input type="checkbox" 
+                                                       th:id="${category + '_system'}" 
+                                                       th:name="${category + '_system'}" 
+                                                       class="form-check-input"
+                                                       th:checked="${preferences[category].systemEnabled}">
+                                                <label th:for="${category + '_system'}" class="form-check-label">
+                                                    <i class="fas fa-bell"></i>
+                                                    Notifications Système
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Heures silencieuses</label>
+                                    <div class="form-check">
+                                        <input type="checkbox" 
+                                               th:id="${category + '_quiet_hours'}" 
+                                               th:name="${category + '_quiet_hours'}" 
+                                               class="form-check-input quiet-hours-toggle"
+                                               th:data-category="${category}"
+                                               th:checked="${preferences[category].quietHoursEnabled}">
+                                        <label th:for="${category + '_quiet_hours'}" class="form-check-label">
+                                            Activer les heures silencieuses
+                                        </label>
+                                    </div>
+                                    
+                                    <div th:id="${category + '_quiet_hours_settings'}" 
+                                         class="quiet-hours-settings" 
+                                         th:style="${preferences[category].quietHoursEnabled ? '' : 'display: none;'}">
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label th:for="${category + '_quiet_start'}">Début</label>
+                                                <input type="time" 
+                                                       th:id="${category + '_quiet_start'}" 
+                                                       th:name="${category + '_quiet_start'}" 
+                                                       class="form-control"
+                                                       th:value="${preferences[category].quietHoursStart}">
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label th:for="${category + '_quiet_end'}">Fin</label>
+                                                <input type="time" 
+                                                       th:id="${category + '_quiet_end'}" 
+                                                       th:name="${category + '_quiet_end'}" 
+                                                       class="form-control"
+                                                       th:value="${preferences[category].quietHoursEnd}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Résumé périodique</label>
+                                    <div class="form-check">
+                                        <input type="checkbox" 
+                                               th:id="${category + '_digest'}" 
+                                               th:name="${category + '_digest'}" 
+                                               class="form-check-input digest-toggle"
+                                               th:data-category="${category}"
+                                               th:checked="${preferences[category].digestEnabled}">
+                                        <label th:for="${category + '_digest'}" class="form-check-label">
+                                            Recevoir un résumé périodique
+                                        </label>
+                                    </div>
+                                    
+                                    <div th:id="${category + '_digest_settings'}" 
+                                         class="digest-settings" 
+                                         th:style="${preferences[category].digestEnabled ? '' : 'display: none;'}">
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label th:for="${category + '_digest_frequency'}">Fréquence</label>
+                                                <select th:id="${category + '_digest_frequency'}" 
+                                                        th:name="${category + '_digest_frequency'}" 
+                                                        class="form-select digest-frequency"
+                                                        th:data-category="${category}">
+                                                    <option value="DAILY" th:selected="${preferences[category].digestFrequency == 'DAILY'}">Quotidien</option>
+                                                    <option value="WEEKLY" th:selected="${preferences[category].digestFrequency == 'WEEKLY'}">Hebdomadaire</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="form-group digest-day-group" 
+                                                 th:id="${category + '_digest_day_group'}"
+                                                 th:style="${preferences[category].digestFrequency == 'WEEKLY' ? '' : 'display: none;'}">
+                                                <label th:for="${category + '_digest_day'}">Jour</label>
+                                                <select th:id="${category + '_digest_day'}" 
+                                                        th:name="${category + '_digest_day'}" 
+                                                        class="form-select">
+                                                    <option value="1" th:selected="${preferences[category].digestDay == 1}">Lundi</option>
+                                                    <option value="2" th:selected="${preferences[category].digestDay == 2}">Mardi</option>
+                                                    <option value="3" th:selected="${preferences[category].digestDay == 3}">Mercredi</option>
+                                                    <option value="4" th:selected="${preferences[category].digestDay == 4}">Jeudi</option>
+                                                    <option value="5" th:selected="${preferences[category].digestDay == 5}">Vendredi</option>
+                                                    <option value="6" th:selected="${preferences[category].digestDay == 6}">Samedi</option>
+                                                    <option value="7" th:selected="${preferences[category].digestDay == 7}">Dimanche</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label th:for="${category + '_digest_time'}">Heure</label>
+                                                <input type="time" 
+                                                       th:id="${category + '_digest_time'}" 
+                                                       th:name="${category + '_digest_time'}" 
+                                                       class="form-control"
+                                                       th:value="${preferences[category].digestTime}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Enregistrer les préférences
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tabs functionality
+            document.querySelectorAll('.tab-item').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    document.getElementById(this.dataset.tab).classList.add('active');
+                });
+            });
+            
+            // Quiet hours toggle
+            document.querySelectorAll('.quiet-hours-toggle').forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    const category = this.dataset.category;
+                    document.getElementById(`${category}_quiet_hours_settings`).style.display = this.checked ? 'block' : 'none';
+                });
+            });
+            
+            // Digest toggle
+            document.querySelectorAll('.digest-toggle').forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    const category = this.dataset.category;
+                    document.getElementById(`${category}_digest_settings`).style.display = this.checked ? 'block' : 'none';
+                });
+            });
+            
+            // Digest frequency change
+            document.querySelectorAll('.digest-frequency').forEach(select => {
+                select.addEventListener('change', function() {
+                    const category = this.dataset.category;
+                    document.getElementById(`${category}_digest_day_group`).style.display = 
+                        this.value === 'WEEKLY' ? 'block' : 'none';
+                });
+            });
+            
+            // Form submission
+            document.getElementById('preferencesForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                savePreferences();
+            });
+        });
+        
+        async function savePreferences() {
+            try {
+                const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+                
+                // Prepare data
+                const preferences = {};
+                
+                // Get all categories
+                const categories = Array.from(document.querySelectorAll('.tab-item')).map(tab => tab.dataset.tab);
+                
+                // For each category, collect preferences
+                categories.forEach(category => {
+                    const categoryPrefs = {};
+                    
+                    // Channel preferences
+                    categoryPrefs.emailEnabled = document.getElementById(`${category}_email`).checked;
+                    categoryPrefs.smsEnabled = document.getElementById(`${category}_sms`).checked;
+                    categoryPrefs.pushEnabled = document.getElementById(`${category}_push`).checked;
+                    categoryPrefs.systemEnabled = document.getElementById(`${category}_system`).checked;
+                    
+                    // Quiet hours
+                    const quietHoursEnabled = document.getElementById(`${category}_quiet_hours`).checked;
+                    categoryPrefs.quietHoursEnabled = quietHoursEnabled;
+                    
+                    if (quietHoursEnabled) {
+                        categoryPrefs.quietHoursStart = document.getElementById(`${category}_quiet_start`).value;
+                        categoryPrefs.quietHoursEnd = document.getElementById(`${category}_quiet_end`).value;
+                    }
+                    
+                    // Digest
+                    const digestEnabled = document.getElementById(`${category}_digest`).checked;
+                    categoryPrefs.digestEnabled = digestEnabled;
+                    
+                    if (digestEnabled) {
+                        categoryPrefs.digestFrequency = document.getElementById(`${category}_digest_frequency`).value;
+                        
+                        if (categoryPrefs.digestFrequency === 'WEEKLY') {
+                            categoryPrefs.digestDay = parseInt(document.getElementById(`${category}_digest_day`).value);
+                        }
+                        
+                        categoryPrefs.digestTime = document.getElementById(`${category}_digest_time`).value;
+                    }
+                    
+                    preferences[category] = categoryPrefs;
+                });
+                
+                // Send request
+                const response = await fetch('/notifications/preferences', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [csrfHeader]: csrfToken
+                    },
+                    body: JSON.stringify(preferences)
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to save preferences');
+                }
+                
+                // Show success message
+                const successMessage = document.getElementById('successMessage');
+                successMessage.style.display = 'flex';
+                
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 3000);
+            } catch (error) {
+                console.error('Error saving preferences:', error);
+                alert('Failed to save preferences: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>Notifications - Digital School</title>
+    
+    <!-- CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/digitalSchool.css}">
+    <link rel="stylesheet" th:href="@{/css/sidebar.css}">
+    <link rel="stylesheet" th:href="@{/css/topbar.css}">
+    <link rel="stylesheet" th:href="@{/css/components/cards.css}">
+    <link rel="stylesheet" th:href="@{/css/components/buttons.css}">
+    <link rel="stylesheet" th:href="@{/css/components/tabs.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">
+                <i class="fas fa-bell"></i>
+                Notifications
+            </h1>
+            <div class="header-actions">
+                <a href="/notifications/preferences" class="btn btn-secondary">
+                    <i class="fas fa-cog"></i>
+                    Préférences
+                </a>
+                <button id="markAllReadBtn" class="btn btn-primary">
+                    <i class="fas fa-check-double"></i>
+                    Tout marquer comme lu
+                </button>
+            </div>
+        </div>
+
+        <div class="tabs-container">
+            <ul class="tabs-nav">
+                <li class="tab-item active" data-tab="all">
+                    <i class="fas fa-list"></i>
+                    Toutes
+                </li>
+                <li class="tab-item" data-tab="unread">
+                    <i class="fas fa-bell"></i>
+                    Non lues
+                    <span class="badge badge-primary" id="unreadBadge" th:text="${unreadCount}">0</span>
+                </li>
+                <li class="tab-item" data-tab="archived">
+                    <i class="fas fa-archive"></i>
+                    Archivées
+                </li>
+            </ul>
+            
+            <div class="tab-content">
+                <!-- All Notifications Tab -->
+                <div id="all" class="tab-pane active">
+                    <div class="notifications-list" id="allNotificationsList">
+                        <!-- Will be populated by JavaScript -->
+                        <div class="loading-indicator">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Chargement des notifications...</span>
+                        </div>
+                    </div>
+                    <div class="pagination" id="allPagination">
+                        <!-- Pagination will be added here -->
+                    </div>
+                </div>
+                
+                <!-- Unread Notifications Tab -->
+                <div id="unread" class="tab-pane">
+                    <div class="notifications-list" id="unreadNotificationsList">
+                        <!-- Will be populated by JavaScript -->
+                        <div class="loading-indicator">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Chargement des notifications...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Archived Notifications Tab -->
+                <div id="archived" class="tab-pane">
+                    <div class="notifications-list" id="archivedNotificationsList">
+                        <!-- Will be populated by JavaScript -->
+                        <div class="loading-indicator">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Chargement des notifications...</span>
+                        </div>
+                    </div>
+                    <div class="pagination" id="archivedPagination">
+                        <!-- Pagination will be added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Detail Modal -->
+    <div class="modal" id="notificationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Détail de la notification</h3>
+                <button class="close-button" onclick="closeNotificationModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="notification-detail">
+                    <div class="notification-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Date:</span>
+                            <span class="meta-value" id="modalDate">-</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Catégorie:</span>
+                            <span class="meta-value" id="modalCategory">-</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Type:</span>
+                            <span class="meta-value" id="modalType">-</span>
+                        </div>
+                    </div>
+                    <div class="notification-content" id="modalContent">
+                        <!-- Notification content will be displayed here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeNotificationModal()">Fermer</button>
+                <button class="btn btn-primary" id="modalArchiveBtn" onclick="archiveNotification()">
+                    <i class="fas fa-archive"></i>
+                    Archiver
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+
+    <script th:src="@{/js/admin/common.js}"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
+    <script th:src="@{/js/topbar.js}"></script>
+
+    <script>
+        // Global variables
+        let currentPage = 0;
+        let totalPages = 0;
+        let currentNotificationId = null;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tabs functionality
+            document.querySelectorAll('.tab-item').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    document.getElementById(this.dataset.tab).classList.add('active');
+                    
+                    // Load data for the selected tab
+                    if (this.dataset.tab === 'all') {
+                        loadAllNotifications(0);
+                    } else if (this.dataset.tab === 'unread') {
+                        loadUnreadNotifications();
+                    } else if (this.dataset.tab === 'archived') {
+                        loadArchivedNotifications(0);
+                    }
+                });
+            });
+            
+            // Mark all as read button
+            document.getElementById('markAllReadBtn').addEventListener('click', markAllAsRead);
+            
+            // Load initial data
+            loadAllNotifications(0);
+            updateUnreadCount();
+        });
+        
+        async function loadAllNotifications(page) {
+            try {
+                const response = await fetch(`/notifications/data?page=${page}&size=10`);
+                if (!response.ok) {
+                    throw new Error('Failed to load notifications');
+                }
+                
+                const data = await response.json();
+                const notifications = data.notifications;
+                currentPage = data.currentPage;
+                totalPages = data.totalPages;
+                
+                // Update unread count
+                document.getElementById('unreadBadge').textContent = data.unreadCount;
+                
+                // Populate notifications list
+                const notificationsList = document.getElementById('allNotificationsList');
+                notificationsList.innerHTML = '';
+                
+                if (notifications.length === 0) {
+                    notificationsList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-bell-slash fa-3x"></i>
+                            <p>Aucune notification</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                notifications.forEach(notification => {
+                    const notificationItem = createNotificationItem(notification);
+                    notificationsList.appendChild(notificationItem);
+                });
+                
+                // Update pagination
+                updatePagination('allPagination', currentPage, totalPages, loadAllNotifications);
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+                document.getElementById('allNotificationsList').innerHTML = `
+                    <div class="error-state">
+                        <i class="fas fa-exclamation-circle fa-3x"></i>
+                        <p>Erreur lors du chargement des notifications</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function loadUnreadNotifications() {
+            try {
+                const response = await fetch('/notifications/unread');
+                if (!response.ok) {
+                    throw new Error('Failed to load unread notifications');
+                }
+                
+                const notifications = await response.json();
+                
+                // Populate notifications list
+                const notificationsList = document.getElementById('unreadNotificationsList');
+                notificationsList.innerHTML = '';
+                
+                if (notifications.length === 0) {
+                    notificationsList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-check-circle fa-3x"></i>
+                            <p>Aucune notification non lue</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                notifications.forEach(notification => {
+                    const notificationItem = createNotificationItem(notification);
+                    notificationsList.appendChild(notificationItem);
+                });
+            } catch (error) {
+                console.error('Error loading unread notifications:', error);
+                document.getElementById('unreadNotificationsList').innerHTML = `
+                    <div class="error-state">
+                        <i class="fas fa-exclamation-circle fa-3x"></i>
+                        <p>Erreur lors du chargement des notifications</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function loadArchivedNotifications(page) {
+            try {
+                const response = await fetch(`/notifications/archived?page=${page}&size=10`);
+                if (!response.ok) {
+                    throw new Error('Failed to load archived notifications');
+                }
+                
+                const data = await response.json();
+                const notifications = data.notifications;
+                currentPage = data.currentPage;
+                totalPages = data.totalPages;
+                
+                // Populate notifications list
+                const notificationsList = document.getElementById('archivedNotificationsList');
+                notificationsList.innerHTML = '';
+                
+                if (notifications.length === 0) {
+                    notificationsList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-archive fa-3x"></i>
+                            <p>Aucune notification archivée</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                notifications.forEach(notification => {
+                    const notificationItem = createNotificationItem(notification);
+                    notificationsList.appendChild(notificationItem);
+                });
+                
+                // Update pagination
+                updatePagination('archivedPagination', currentPage, totalPages, loadArchivedNotifications);
+            } catch (error) {
+                console.error('Error loading archived notifications:', error);
+                document.getElementById('archivedNotificationsList').innerHTML = `
+                    <div class="error-state">
+                        <i class="fas fa-exclamation-circle fa-3x"></i>
+                        <p>Erreur lors du chargement des notifications</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function createNotificationItem(notification) {
+            const item = document.createElement('div');
+            item.className = 'notification-item';
+            if (!notification.read) {
+                item.classList.add('unread');
+            }
+            
+            // Format date
+            const date = new Date(notification.createdAt).toLocaleString('fr-FR');
+            
+            // Get icon based on category
+            const icon = getCategoryIcon(notification.category);
+            
+            item.innerHTML = `
+                <div class="notification-icon">
+                    <i class="${icon}"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-header">
+                        <h3 class="notification-title">${notification.subject}</h3>
+                        <span class="notification-date">${date}</span>
+                    </div>
+                    <div class="notification-preview">
+                        ${getTextPreview(notification.content, 100)}
+                    </div>
+                </div>
+            `;
+            
+            // Add click event to open notification
+            item.addEventListener('click', () => {
+                openNotification(notification);
+            });
+            
+            return item;
+        }
+        
+        function updatePagination(containerId, currentPage, totalPages, loadFunction) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            if (totalPages <= 1) {
+                return;
+            }
+            
+            const pagination = document.createElement('div');
+            pagination.className = 'pagination-controls';
+            
+            // Previous button
+            const prevButton = document.createElement('button');
+            prevButton.className = 'pagination-button';
+            prevButton.disabled = currentPage === 0;
+            prevButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevButton.addEventListener('click', () => loadFunction(currentPage - 1));
+            pagination.appendChild(prevButton);
+            
+            // Page buttons
+            const startPage = Math.max(0, currentPage - 2);
+            const endPage = Math.min(totalPages - 1, currentPage + 2);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.className = 'pagination-button';
+                if (i === currentPage) {
+                    pageButton.classList.add('active');
+                }
+                pageButton.textContent = i + 1;
+                pageButton.addEventListener('click', () => loadFunction(i));
+                pagination.appendChild(pageButton);
+            }
+            
+            // Next button
+            const nextButton = document.createElement('button');
+            nextButton.className = 'pagination-button';
+            nextButton.disabled = currentPage === totalPages - 1;
+            nextButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextButton.addEventListener('click', () => loadFunction(currentPage + 1));
+            pagination.appendChild(nextButton);
+            
+            container.appendChild(pagination);
+        }
+        
+        function openNotification(notification) {
+            // Set current notification ID
+            currentNotificationId = notification.id;
+            
+            // Populate modal
+            document.getElementById('modalTitle').textContent = notification.subject;
+            document.getElementById('modalDate').textContent = new Date(notification.createdAt).toLocaleString('fr-FR');
+            document.getElementById('modalCategory').textContent = notification.category || '-';
+            document.getElementById('modalType').textContent = notification.type;
+            document.getElementById('modalContent').innerHTML = notification.content;
+            
+            // Show/hide archive button
+            document.getElementById('modalArchiveBtn').style.display = notification.archived ? 'none' : 'block';
+            
+            // Show modal
+            document.getElementById('notificationModal').style.display = 'block';
+            
+            // Mark as read if not already
+            if (!notification.read) {
+                markAsRead(notification.id);
+            }
+        }
+        
+        function closeNotificationModal() {
+            document.getElementById('notificationModal').style.display = 'none';
+            currentNotificationId = null;
+        }
+        
+        async function markAsRead(id) {
+            try {
+                const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+                
+                const response = await fetch(`/notifications/${id}/read`, {
+                    method: 'PUT',
+                    headers: {
+                        [csrfHeader]: csrfToken
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to mark notification as read');
+                }
+                
+                // Update UI
+                updateUnreadCount();
+                
+                // Refresh current tab
+                const activeTab = document.querySelector('.tab-item.active').dataset.tab;
+                if (activeTab === 'all') {
+                    loadAllNotifications(currentPage);
+                } else if (activeTab === 'unread') {
+                    loadUnreadNotifications();
+                }
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+            }
+        }
+        
+        async function markAllAsRead() {
+            try {
+                const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+                
+                const response = await fetch('/notifications/read-all', {
+                    method: 'PUT',
+                    headers: {
+                        [csrfHeader]: csrfToken
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to mark all notifications as read');
+                }
+                
+                // Update UI
+                updateUnreadCount();
+                
+                // Refresh current tab
+                const activeTab = document.querySelector('.tab-item.active').dataset.tab;
+                if (activeTab === 'all') {
+                    loadAllNotifications(currentPage);
+                } else if (activeTab === 'unread') {
+                    loadUnreadNotifications();
+                }
+            } catch (error) {
+                console.error('Error marking all notifications as read:', error);
+                alert('Failed to mark all notifications as read: ' + error.message);
+            }
+        }
+        
+        async function archiveNotification() {
+            if (!currentNotificationId) return;
+            
+            try {
+                const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+                
+                const response = await fetch(`/notifications/${currentNotificationId}/archive`, {
+                    method: 'PUT',
+                    headers: {
+                        [csrfHeader]: csrfToken
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to archive notification');
+                }
+                
+                // Close modal
+                closeNotificationModal();
+                
+                // Refresh current tab
+                const activeTab = document.querySelector('.tab-item.active').dataset.tab;
+                if (activeTab === 'all') {
+                    loadAllNotifications(currentPage);
+                } else if (activeTab === 'unread') {
+                    loadUnreadNotifications();
+                } else if (activeTab === 'archived') {
+                    loadArchivedNotifications(currentPage);
+                }
+            } catch (error) {
+                console.error('Error archiving notification:', error);
+                alert('Failed to archive notification: ' + error.message);
+            }
+        }
+        
+        async function updateUnreadCount() {
+            try {
+                const response = await fetch('/notifications/count');
+                if (!response.ok) {
+                    throw new Error('Failed to get unread count');
+                }
+                
+                const data = await response.json();
+                document.getElementById('unreadBadge').textContent = data.count;
+            } catch (error) {
+                console.error('Error updating unread count:', error);
+            }
+        }
+        
+        // Utility functions
+        function getCategoryIcon(category) {
+            switch (category) {
+                case 'ATTENDANCE':
+                    return 'fas fa-user-check';
+                case 'GRADES':
+                    return 'fas fa-star';
+                case 'HOMEWORK':
+                    return 'fas fa-tasks';
+                case 'EXAMS':
+                    return 'fas fa-file-alt';
+                case 'EVENTS':
+                    return 'fas fa-calendar-alt';
+                case 'ANNOUNCEMENTS':
+                    return 'fas fa-bullhorn';
+                case 'MESSAGES':
+                    return 'fas fa-envelope';
+                case 'PAYMENTS':
+                    return 'fas fa-money-bill-wave';
+                case 'SYSTEM':
+                    return 'fas fa-cog';
+                default:
+                    return 'fas fa-bell';
+            }
+        }
+        
+        function getTextPreview(html, maxLength) {
+            // Create a temporary element to extract text from HTML
+            const temp = document.createElement('div');
+            temp.innerHTML = html;
+            const text = temp.textContent || temp.innerText || '';
+            
+            // Truncate text if needed
+            if (text.length > maxLength) {
+                return text.substring(0, maxLength) + '...';
+            }
+            
+            return text;
+        }
+    </script>
+</body>
+</html>
